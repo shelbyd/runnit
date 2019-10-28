@@ -1,0 +1,14 @@
+Uh oh, this didn't work like you thought...
+
+Try running this to fix it:
+  true
+
+Or this:
+  echo long argument \
+    list
+
+Possibly this too:
+  false
+
+Maybe this?
+  echo foo >> /tmp/foo.txt
