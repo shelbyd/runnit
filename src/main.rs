@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate cached;
+
 use regex::RegexBuilder;
 use std::error::Error;
 use std::io::{copy, stdin, stdout, Result as IoResult, Write};
@@ -61,11 +64,18 @@ fn runnable_command(cmd: &str) -> bool {
         None => return false,
         Some(f) => f,
     };
-    Command::new("which")
-        .arg(first)
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status()
-        .expect("Failed to run which")
-        .success()
+    runnable_first(first.to_string())
+}
+
+cached! {
+    COMMANDS;
+    fn runnable_first(first: String) -> bool = {
+        Command::new("which")
+            .arg(first)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .expect("Failed to run which")
+            .success()
+    }
 }
