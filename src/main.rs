@@ -7,6 +7,9 @@ use std::io::{copy, stdin, stdout, Result as IoResult, Write};
 use std::process::{Command, Stdio};
 use subprocess::{Exec, NullFile};
 
+mod compgen;
+use self::compgen::*;
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut reader = stdin();
     let stdout = stdout();
