@@ -1,10 +1,6 @@
-#[macro_use]
-extern crate cached;
-
 use regex::RegexBuilder;
 use std::error::Error;
 use std::io::{copy, stdin, stdout, Result as IoResult, Write};
-use std::process::{Command, Stdio};
 use subprocess::{Exec, NullFile};
 
 mod compgen;
@@ -30,12 +26,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         .multi_line(true)
         .build()?;
 
+    let compgen = Compgen::create()?;
+
     command_regex
         .captures_iter(&output)
         .map(|c| c[1].to_string())
-        .filter(|c| runnable_command(&c))
-        .map(|c| Exec::shell(c).stdout(NullFile).stderr(NullFile))
-        .map(|shell| shell.join())
+        .filter(|c| compgen.runnable_command(&c))
+        .map(|c| Exec::shell(c).stdout(NullFile).stderr(NullFile).join())
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok(())
@@ -58,27 +55,5 @@ impl<'w> Write for MultiWriter<'w> {
             writer.flush()?;
         }
         Ok(())
-    }
-}
-
-fn runnable_command(cmd: &str) -> bool {
-    let first = cmd.split_whitespace().next();
-    let first = match first {
-        None => return false,
-        Some(f) => f,
-    };
-    runnable_first(first.to_string())
-}
-
-cached! {
-    COMMANDS;
-    fn runnable_first(first: String) -> bool = {
-        Command::new("which")
-            .arg(first)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .status()
-            .expect("Failed to run which")
-            .success()
     }
 }
